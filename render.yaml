@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: examtrack
+    env: static
+    buildCommand: mkdir -p public && cp index.html public/
+    staticPublishPath: public
+    routes:
+      - type: redirect
+        source: /index.html
+        destination: /
