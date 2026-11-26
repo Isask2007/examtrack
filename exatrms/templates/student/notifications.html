@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-end gap-3">
+  <div><h1 class="page-title">Notifications</h1><p class="page-subtitle">Announcements and result updates from the examination cell.</p></div>
+  {% if unread_count %}<form method="post" action="{{ url_for('student.notification_read_all') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-primary" type="submit"><i class="bi bi-check2-all me-1"></i>Mark all as read</button></form>{% endif %}
+</div>
+<div class="card app-card">
+  <div class="list-group list-group-flush">
+    {% for notification in notifications %}
+      {% set is_read = notification.id in read_ids %}
+      <div class="list-group-item notification-item {{ 'read' if is_read }}">
+        <div class="notification-icon"><i class="bi bi-{{ 'check-circle-fill' if is_read else 'megaphone-fill' }}"></i></div>
+        <div class="flex-grow-1">
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <h6 class="mb-0">{{ notification.title }}</h6>
+            {% if not is_read %}<span class="badge bg-primary-subtle text-primary">New</span>{% endif %}
+          </div>
+          <p class="mb-1 text-muted small">{{ notification.message }}</p>
+          <div class="small text-muted">{{ notification.created_at|datetimefmt }}</div>
+        </div>
+        {% if not is_read %}
+          <form method="post" action="{{ url_for('student.notification_read', id=notification.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-outline-secondary" type="submit">Mark read</button>
+          </form>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="card-body text-center py-5 text-muted">No notifications yet.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

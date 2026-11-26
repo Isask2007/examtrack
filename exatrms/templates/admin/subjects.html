@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Subjects{% endblock %}
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-end gap-3">
+  <div><h1 class="page-title">Subjects</h1><p class="page-subtitle">Curriculum subjects mapped to courses and semesters.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('admin.subject_new') }}"><i class="bi bi-plus-lg me-1"></i>Add Subject</a>
+</div>
+<div class="card app-card">
+  <div class="card-body border-bottom">
+    <form class="row g-2 align-items-center" method="get">
+      <div class="col-md-4"><input class="form-control" type="search" name="q" value="{{ search }}" placeholder="Search code or name"></div>
+      <div class="col-md-3">
+        <select class="form-select" name="course_id" data-auto-submit>
+          <option value="">All courses</option>
+          {% for course in courses %}<option value="{{ course.id }}" {{ 'selected' if course.id == course_id }}>{{ course.code }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" name="semester_id" data-auto-submit>
+          <option value="">All semesters</option>
+          {% for semester in semesters %}<option value="{{ semester.id }}" {{ 'selected' if semester.id == semester_id }}>Semester {{ semester.number }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Filter</button></div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table app-table mb-0 align-middle">
+      <thead><tr><th>Code</th><th>Subject</th><th>Course</th><th>Sem</th><th>Credits</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+      {% for subject in subjects_page.items %}
+        <tr>
+          <td><span class="code-badge">{{ subject.code }}</span></td>
+          <td><strong>{{ subject.name }}</strong><div class="text-muted small">{{ subject.description or '—' }}</div></td>
+          <td>{{ subject.course.code }}</td>
+          <td>{{ subject.semester.number }}</td>
+          <td>{{ subject.credits }}</td>
+          <td><span class="status-pill {{ 'pass' if subject.is_active else 'fail' }}">{{ 'Active' if subject.is_active else 'Inactive' }}</span></td>
+          <td class="text-end">
+            <div class="btn-group btn-group-sm">
+              <a class="btn btn-outline-secondary" href="{{ url_for('admin.subject_edit', id=subject.id) }}"><i class="bi bi-pencil"></i></a>
+              <button class="btn btn-outline-danger" data-confirm="Delete {{ subject.code }}?" data-form="del-sub-{{ subject.id }}"><i class="bi bi-trash"></i></button>
+            </div>
+            <form id="del-sub-{{ subject.id }}" method="post" action="{{ url_for('admin.subject_delete', id=subject.id) }}" class="d-none"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"></form>
+          </td>
+        </tr>
+      {% else %}<tr><td colspan="7" class="text-center text-muted py-5">No subjects found.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-body">{% set pagination = subjects_page %}{% include '_pagination.html' %}</div>
+</div>
+{% endblock %}

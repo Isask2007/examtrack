@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}PDF Reports{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">PDF Reports</h1>
+  <p class="page-subtitle">Generate official result reports and digital marksheets.</p>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <div class="report-icon bg-primary-subtle text-primary"><i class="bi bi-file-earmark-bar-graph-fill"></i></div>
+        <h4 class="mt-3">Consolidated Result Report</h4>
+        <p class="text-muted">Download a PDF containing every student's result for one examination, with pass statistics and ranks.</p>
+        <form class="row g-2 align-items-end" id="examReportForm">
+          <div class="col-9">
+            <label class="form-label" for="report_exam">Examination</label>
+            <select class="form-select" id="report_exam" required>
+              <option value="">Select exam</option>
+              {% for exam in exams %}<option value="{{ exam.id }}">{{ exam.name }} · {{ exam.academic_year }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-3"><button class="btn btn-primary w-100" type="button" onclick="downloadExamReport()"><i class="bi bi-download"></i> PDF</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <div class="report-icon bg-success-subtle text-success"><i class="bi bi-file-earmark-person-fill"></i></div>
+        <h4 class="mt-3">Student Digital Marksheet</h4>
+        <p class="text-muted">Generate a one-page marksheet with subject-wise marks, grade, GPA, percentage and result status.</p>
+        <form class="row g-2 align-items-end" id="marksheetForm">
+          <div class="col-5">
+            <label class="form-label" for="marksheet_exam">Examination</label>
+            <select class="form-select" id="marksheet_exam" required>
+              <option value="">Select exam</option>
+              {% for exam in exams %}<option value="{{ exam.id }}">{{ exam.name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-5">
+            <label class="form-label" for="marksheet_student">Student</label>
+            <select class="form-select" id="marksheet_student" required>
+              <option value="">Select student</option>
+              {% for student in students %}<option value="{{ student.id }}">{{ student.student_code }} — {{ student.full_name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-2"><button class="btn btn-success w-100" type="button" onclick="downloadMarksheet()"><i class="bi bi-download"></i> PDF</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card app-card mt-4">
+  <div class="card-body">
+    <h5 class="card-title mb-3">Quick Links</h5>
+    <div class="d-flex flex-wrap gap-2">
+      {% for exam in exams %}
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.exam_report_pdf', exam_id=exam.id) }}"><i class="bi bi-file-pdf me-1"></i>{{ exam.name }}</a>
+      {% else %}<span class="text-muted">No examinations available yet.</span>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  const examReportTemplate = "{{ url_for('admin.exam_report_pdf', exam_id=999999) }}";
+  const marksheetTemplate = "{{ url_for('admin.marksheet_pdf', student_id=999999, exam_id=888888) }}";
+
+  function downloadExamReport() {
+    const examId = document.getElementById('report_exam').value;
+    if (!examId) { alert('Select an examination.'); return; }
+    window.location.href = examReportTemplate.replace('999999', examId);
+  }
+  function downloadMarksheet() {
+    const examId = document.getElementById('marksheet_exam').value;
+    const studentId = document.getElementById('marksheet_student').value;
+    if (!examId || !studentId) { alert('Select an examination and a student.'); return; }
+    window.location.href = marksheetTemplate.replace('999999', studentId).replace('888888', examId);
+  }
+</script>
+{% endblock %}

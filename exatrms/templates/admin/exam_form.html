@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Examination' if exam else 'New Examination' }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <a class="btn btn-link ps-0" href="{{ url_for('admin.exams') }}"><i class="bi bi-arrow-left me-1"></i>Back to examinations</a>
+  <h1 class="page-title">{{ 'Edit Examination' if exam else 'New Examination' }}</h1>
+</div>
+<div class="card app-card">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="card-body row g-3">
+      <div class="col-md-6">
+        <label class="form-label" for="name">Examination Name *</label>
+        <input class="form-control" id="name" name="name" value="{{ form.get('name', exam.name if exam else '') }}" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="exam_type">Type *</label>
+        <select class="form-select" id="exam_type" name="exam_type">
+          {% set selected_type = form.get('exam_type', exam.exam_type if exam else 'Midterm') %}
+          {% for option in ['Quiz', 'Midterm', 'Final', 'Practical'] %}<option value="{{ option }}" {{ 'selected' if selected_type == option }}>{{ option }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="max_marks">Maximum Marks *</label>
+        <input class="form-control" type="number" step="0.01" min="1" id="max_marks" name="max_marks" value="{{ form.get('max_marks', exam.max_marks if exam else 100) }}" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="course_id">Course *</label>
+        <select class="form-select" id="course_id" name="course_id" required>
+          <option value="">Select course</option>
+          {% set sc = form.get('course_id', exam.course_id if exam else '')|string %}
+          {% for course in courses %}<option value="{{ course.id }}" {{ 'selected' if sc == course.id|string }}>{{ course.code }} — {{ course.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="semester_id">Semester *</label>
+        <select class="form-select" id="semester_id" name="semester_id" required>
+          <option value="">Select semester</option>
+          {% set ss = form.get('semester_id', exam.semester_id if exam else '')|string %}
+          {% for semester in semesters %}<option value="{{ semester.id }}" {{ 'selected' if ss == semester.id|string }}>Semester {{ semester.number }} ({{ semester.academic_year }})</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="academic_year">Academic Year *</label>
+        <input class="form-control" id="academic_year" name="academic_year" value="{{ form.get('academic_year', exam.academic_year if exam else default_year) }}" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="start_date">Start Date</label>
+        <input class="form-control" type="date" id="start_date" name="start_date" value="{{ form.get('start_date', (exam.start_date|datefmt('%Y-%m-%d') if exam and exam.start_date else '')) }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="end_date">End Date</label>
+        <input class="form-control" type="date" id="end_date" name="end_date" value="{{ form.get('end_date', (exam.end_date|datefmt('%Y-%m-%d') if exam and exam.end_date else '')) }}">
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <div class="form-check form-switch mb-2">
+          <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {{ 'checked' if (exam and exam.is_active) or (not exam and not form) }}>
+          <label class="form-check-label" for="is_active">Active</label>
+        </div>
+      </div>
+      {% if exam %}
+        <div class="col-12">
+          <div class="alert alert-info small mb-0">
+            <i class="bi bi-info-circle me-2"></i>This examination is {{ 'published' if exam.is_published else 'not published' }}. Publish it from the Examinations list when results are ready.
+          </div>
+        </div>
+      {% endif %}
+    </div>
+    <div class="card-footer bg-white border-0 d-flex gap-2">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle me-1"></i>Save Examination</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('admin.exams') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

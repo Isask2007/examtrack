@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-end gap-3">
+  <div><h1 class="page-title">Students</h1><p class="page-subtitle">Manage student profiles and login accounts.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('admin.student_new') }}"><i class="bi bi-person-plus-fill me-1"></i>Add Student</a>
+</div>
+
+<div class="card app-card">
+  <div class="card-body border-bottom">
+    <form class="row g-2 align-items-center" method="get">
+      <div class="col-md-5">
+        <input class="form-control" type="search" name="q" value="{{ search }}" placeholder="Search name, code or email">
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" name="course_id">
+          <option value="">All courses</option>
+          {% for course in courses %}<option value="{{ course.id }}" {{ 'selected' if course.id == course_id }}>{{ course.code }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select class="form-select" name="semester_id">
+          <option value="">All semesters</option>
+          {% for semester in semesters %}<option value="{{ semester.id }}" {{ 'selected' if semester.id == semester_id }}>Sem {{ semester.number }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button class="btn btn-primary flex-fill" type="submit"><i class="bi bi-search"></i> Filter</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('admin.students') }}"><i class="bi bi-arrow-counterclockwise"></i></a>
+      </div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table app-table mb-0 align-middle">
+      <thead><tr><th>Student</th><th>Course</th><th>Semester</th><th>Contact</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+      {% for student in students_page.items %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="mini-avatar">{{ student.first_name[0] }}{{ student.last_name[0] }}</span>
+              <div><strong>{{ student.full_name }}</strong><div class="text-muted small">{{ student.student_code }}</div></div>
+            </div>
+          </td>
+          <td>{{ student.course.code }}</td>
+          <td>Sem {{ student.semester.number }}</td>
+          <td><div>{{ student.email }}</div><div class="text-muted small">{{ student.phone or '—' }}</div></td>
+          <td><span class="status-pill {{ 'pass' if student.is_active else 'fail' }}">{{ 'Active' if student.is_active else 'Inactive' }}</span></td>
+          <td class="text-end">
+            <div class="btn-group btn-group-sm">
+              <a class="btn btn-outline-primary" href="{{ url_for('admin.student_detail', id=student.id) }}" title="View"><i class="bi bi-eye"></i></a>
+              <a class="btn btn-outline-secondary" href="{{ url_for('admin.student_edit', id=student.id) }}" title="Edit"><i class="bi bi-pencil"></i></a>
+              <button class="btn btn-outline-danger" type="button" data-confirm="Remove {{ student.full_name }}? This cannot be undone." data-form="delete-student-{{ student.id }}"><i class="bi bi-trash"></i></button>
+            </div>
+            <form id="delete-student-{{ student.id }}" method="post" action="{{ url_for('admin.student_delete', id=student.id) }}" class="d-none">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-5">No students found. <a href="{{ url_for('admin.student_new') }}">Add the first student</a>.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-body">{% set pagination = students_page %}{% include '_pagination.html' %}</div>
+</div>
+{% endblock %}

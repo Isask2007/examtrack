@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">My Profile</h1>
+  <p class="page-subtitle">Personal and academic information from your student record.</p>
+</div>
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card app-card text-center">
+      <div class="card-body">
+        <div class="profile-avatar mx-auto mb-3">{{ student.first_name[0] }}{{ student.last_name[0] }}</div>
+        <h4 class="mb-1">{{ student.full_name }}</h4>
+        <div class="text-muted">{{ student.student_code }}</div>
+        <span class="status-pill mt-3 {{ 'pass' if student.is_active else 'fail' }}">{{ 'Active' if student.is_active else 'Inactive' }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card app-card mb-4">
+      <div class="card-header app-card-header"><h5 class="card-title mb-0">Academic Details</h5></div>
+      <div class="card-body">
+        <div class="info-list info-list-grid">
+          <div><span>Course</span><strong>{{ student.course.name }}</strong></div>
+          <div><span>Course Code</span><strong>{{ student.course.code }}</strong></div>
+          <div><span>Semester</span><strong>Semester {{ student.semester.number }}</strong></div>
+          <div><span>Academic Year</span><strong>{{ student.semester.academic_year }}</strong></div>
+          <div><span>Admission Date</span><strong>{{ student.admission_date|datefmt }}</strong></div>
+          <div><span>Duration</span><strong>{{ student.course.duration_years }} years</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="card app-card">
+      <div class="card-header app-card-header"><h5 class="card-title mb-0">Personal Details</h5></div>
+      <div class="card-body">
+        <div class="info-list info-list-grid">
+          <div><span>Email</span><strong>{{ student.email }}</strong></div>
+          <div><span>Phone</span><strong>{{ student.phone or '—' }}</strong></div>
+          <div><span>Gender</span><strong>{{ student.gender or '—' }}</strong></div>
+          <div><span>Date of Birth</span><strong>{{ student.date_of_birth|datefmt }}</strong></div>
+          <div><span>Address</span><strong>{{ student.address or '—' }}</strong></div>
+          <div><span>Account Username</span><strong>{{ current_user.username }}</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

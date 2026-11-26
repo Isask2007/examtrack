@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Notification' if notification else 'New Notification' }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <a class="btn btn-link ps-0" href="{{ url_for('admin.notifications') }}"><i class="bi bi-arrow-left me-1"></i>Back to notifications</a>
+  <h1 class="page-title">{{ 'Edit Notification' if notification else 'New Notification' }}</h1>
+</div>
+<div class="card app-card">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="card-body row g-3">
+      <div class="col-md-8">
+        <label class="form-label" for="title">Title *</label>
+        <input class="form-control" id="title" name="title" value="{{ form.get('title', notification.title if notification else '') }}" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="audience">Audience *</label>
+        <select class="form-select" id="audience" name="audience" data-specific-audience>
+          {% set audience = form.get('audience', notification.audience if notification else 'all') %}
+          <option value="all" {{ 'selected' if audience == 'all' }}>Everyone</option>
+          <option value="students" {{ 'selected' if audience == 'students' }}>Students only</option>
+          <option value="admins" {{ 'selected' if audience == 'admins' }}>Admins only</option>
+          <option value="specific" {{ 'selected' if audience == 'specific' }}>Specific user</option>
+        </select>
+      </div>
+      <div class="col-md-6" id="specificUserField">
+        <label class="form-label" for="user_id">Specific User (required for 'Specific user')</label>
+        <select class="form-select" id="user_id" name="user_id">
+          <option value="">Select user</option>
+          {% set uid = form.get('user_id', notification.user_id if notification and notification.user_id else '')|string %}
+          {% for user in users %}<option value="{{ user.id }}" {{ 'selected' if uid == user.id|string }}>{{ user.username }} ({{ user.role }})</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="message">Message *</label>
+        <textarea class="form-control" id="message" name="message" rows="4" required>{{ form.get('message', notification.message if notification else '') }}</textarea>
+      </div>
+      <div class="col-12">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {{ 'checked' if (notification and notification.is_active) or (not notification and not form) }}>
+          <label class="form-check-label" for="is_active">Active / visible</label>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer bg-white border-0 d-flex gap-2">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle me-1"></i>Save Notification</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('admin.notifications') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

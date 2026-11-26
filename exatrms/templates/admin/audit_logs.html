@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Audit Logs</h1>
+  <p class="page-subtitle">Secure trail of important system activities.</p>
+</div>
+<div class="card app-card">
+  <div class="card-body border-bottom">
+    <form class="row g-2 align-items-center" method="get">
+      <div class="col-md-5"><input class="form-control" type="search" name="action" value="{{ action }}" placeholder="Search action (e.g. LOGIN, ENTER_MARKS)"></div>
+      <div class="col-md-4">
+        <select class="form-select" name="user_id">
+          <option value="">All users</option>
+          {% for user in users %}<option value="{{ user.id }}" {{ 'selected' if user.id == user_id }}>{{ user.username }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3"><button class="btn btn-primary w-100" type="submit">Filter</button></div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table app-table mb-0 align-middle">
+      <thead><tr><th>Time</th><th>Action</th><th>User</th><th>Entity</th><th>Details</th><th>IP Address</th></tr></thead>
+      <tbody>
+      {% for log in logs_page.items %}
+        <tr>
+          <td class="text-nowrap">{{ log.created_at|datetimefmt }}</td>
+          <td><span class="code-badge">{{ log.action }}</span></td>
+          <td>{{ log.actor.username if log.actor else 'System' }}</td>
+          <td>{{ log.entity_type or '—' }} {{ log.entity_id or '' }}</td>
+          <td class="text-muted small">{{ log.details or '—' }}</td>
+          <td class="text-muted small">{{ log.ip_address or '—' }}</td>
+        </tr>
+      {% else %}<tr><td colspan="6" class="text-center text-muted py-5">No activity recorded.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-body">{% set pagination = logs_page %}{% include '_pagination.html' %}</div>
+</div>
+{% endblock %}

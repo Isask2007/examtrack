@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Result Detail{% endblock %}
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-end gap-3">
+  <div>
+    <a class="btn btn-link ps-0" href="{{ url_for('admin.results') }}"><i class="bi bi-arrow-left me-1"></i>Back to results</a>
+    <h1 class="page-title">{{ result.student.full_name }}</h1>
+    <p class="page-subtitle">{{ result.examination.name }} · {{ result.examination.academic_year }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <form method="post" action="{{ url_for('admin.results_recalculate', exam_id=result.examination_id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-arrow-repeat me-1"></i>Recalculate</button>
+    </form>
+    <a class="btn btn-primary" href="{{ url_for('admin.marksheet_pdf', student_id=result.student_id, exam_id=result.examination_id) }}"><i class="bi bi-file-earmark-pdf me-1"></i>Download Marksheet</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="stat-card stat-primary"><div class="stat-value">{{ result.percentage|num }}%</div><div class="stat-label">Percentage</div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card stat-teal"><div class="stat-value">{{ result.gpa|num }}</div><div class="stat-label">GPA</div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card stat-violet"><div class="stat-value">{{ result.grade }}</div><div class="stat-label">Grade</div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card stat-amber"><div class="stat-value">{{ result.rank or '—' }}</div><div class="stat-label">Rank</div></div></div>
+</div>
+
+<div class="card app-card">
+  <div class="card-header app-card-header"><h5 class="card-title mb-0">Subject-wise Marks</h5><span class="status-pill {{ result.status }}">{{ result.status|title }}</span></div>
+  <div class="table-responsive">
+    <table class="table app-table mb-0">
+      <thead><tr><th>Subject</th><th>Credits</th><th>Max</th><th>Obtained</th><th>%</th><th>Grade</th><th>Points</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for mark in marks %}
+        <tr>
+          <td>{{ mark.subject.code }} — {{ mark.subject.name }}</td>
+          <td>{{ mark.subject.credits }}</td>
+          <td>{{ mark.max_marks|num }}</td>
+          <td>{{ mark.marks_obtained|num }}</td>
+          <td>{{ mark.percentage|num }}%</td>
+          <td><span class="grade-badge">{{ mark.grade }}</span></td>
+          <td>{{ mark.grade_points|num }}</td>
+          <td><span class="status-pill {{ mark.status }}">{{ mark.status|title }}</span></td>
+        </tr>
+      {% else %}<tr><td colspan="8" class="text-center text-muted py-4">No marks recorded.</td></tr>{% endfor %}
+      </tbody>
+      <tfoot><tr class="fw-bold"><td colspan="3">Total: {{ result.total_marks|num }}</td><td colspan="4">Obtained: {{ result.obtained_marks|num }}</td><td>{{ result.percentage|num }}%</td></tr></tfoot>
+    </table>
+  </div>
+</div>
+{% endblock %}

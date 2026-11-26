@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ExamTrack — Offline Website</title>
+  <style>
+    :root{
+      --navy:#0f172a;--navy2:#111c33;--primary:#4f46e5;--primary2:#4338ca;
+      --teal:#0ea5a4;--violet:#8b5cf6;--amber:#f59e0b;--danger:#e11d48;
+      --success:#0f9f6e;--bg:#f5f7fb;--card:#fff;--border:#e8edf4;
+      --text:#1e293b;--muted:#64748b;--sidebar:252px;--radius:14px;
+      --shadow:0 6px 24px rgba(15,23,42,.06);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:"Segoe UI",Inter,system-ui,-apple-system,sans-serif;font-size:14px;color:var(--text);background:var(--bg)}
+    a{text-decoration:none;color:inherit}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .hidden{display:none!important}
+
+    /* ---------- Login ---------- */
+    .auth-wrap{min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr}
+    .auth-brand{background:radial-gradient(circle at 15% 20%,#312e81 0,transparent 45%),linear-gradient(145deg,#0f172a,#1e1b4b);color:#fff;padding:48px 56px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+    .auth-brand:after{content:"";position:absolute;width:420px;height:420px;right:-140px;bottom:-160px;border:1px solid rgba(255,255,255,.09);border-radius:50%}
+    .auth-brand>*{position:relative;z-index:1}
+    .logo{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:750;letter-spacing:-.4px}
+    .logo-mark{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--primary),#7c3aed);box-shadow:0 8px 20px rgba(79,70,229,.45);font-size:22px}
+    .auth-brand h1{font-size:38px;line-height:1.15;margin:80px 0 14px;letter-spacing:-1px;max-width:480px}
+    .auth-brand p{color:#cbd5e1;max-width:450px;line-height:1.7;font-size:15px}
+    .feature{display:flex;gap:12px;align-items:center;margin:14px 0;color:#e2e8f0}
+    .feature i{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.09);color:#a5b4fc;font-style:normal}
+    .auth-foot{margin-top:auto;color:#94a3b8;font-size:12px}
+    .auth-form{display:grid;place-items:center;padding:40px 24px}
+    .auth-card{width:100%;max-width:410px;background:#fff;border:1px solid var(--border);border-radius:18px;padding:34px;box-shadow:0 20px 50px rgba(15,23,42,.09)}
+    .auth-card h2{margin:0 0 6px;font-size:24px;letter-spacing:-.5px}
+    .auth-card>p{margin:0 0 24px;color:var(--muted)}
+    label{display:block;font-size:12px;font-weight:650;color:#475569;margin:14px 0 6px}
+    input,select,textarea{width:100%;border:1px solid #dbe3ee;border-radius:9px;padding:10px 12px;font-size:13px;background:#fff;color:var(--text)}
+    input:focus,select:focus,textarea:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 .2rem rgba(79,70,229,.13)}
+    .hint{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.7}
+    .hint b{color:var(--text)}
+
+    /* ---------- Shell ---------- */
+    .shell{min-height:100vh;display:flex}
+    .sidebar{width:var(--sidebar);position:fixed;inset:0 auto 0 0;background:linear-gradient(180deg,var(--navy),var(--navy2));color:#cbd5e1;display:flex;flex-direction:column;z-index:50;overflow-y:auto}
+    .sidebar .logo{padding:20px;border-bottom:1px solid rgba(255,255,255,.07)}
+    .nav{padding:12px;flex:1}
+    .nav-label{font-size:10px;text-transform:uppercase;letter-spacing:1.1px;color:#64748b;font-weight:700;padding:15px 12px 6px}
+    .nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;margin-bottom:3px;border-radius:9px;font-weight:500;transition:.18s}
+    .nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+    .nav a.active{background:linear-gradient(90deg,var(--primary),#6366f1);color:#fff;box-shadow:0 5px 14px rgba(79,70,229,.35)}
+    .nav a .ico{width:19px;text-align:center;font-size:15px}
+    .side-foot{padding:16px 20px 22px;border-top:1px solid rgba(255,255,255,.07);font-size:11px;color:#a5b4fc}
+    .backdrop{display:none}
+    .main{margin-left:var(--sidebar);width:calc(100% - var(--sidebar));min-height:100vh;display:flex;flex-direction:column}
+    .topbar{height:66px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 24px;position:sticky;top:0;z-index:40}
+    .toggle{display:none;width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:#fff}
+    .top-title{font-weight:700;font-size:15px}
+    .top-sub{font-size:11px;color:var(--muted)}
+    .spacer{flex:1}
+    .avatar{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--violet))}
+    .content{padding:24px;flex:1}
+    .footer{border-top:1px solid var(--border);padding:14px 24px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;background:#fff}
+
+    /* ---------- Components ---------- */
+    .page-head{margin-bottom:20px}
+    .page-head h1{font-size:25px;letter-spacing:-.5px;margin:0 0 4px}
+    .page-head p{margin:0;color:var(--muted)}
+    .row{display:flex;flex-wrap:wrap;gap:16px}
+    .row>*{flex:1;min-width:260px}
+    .row>.span2{flex:2}
+    .row>.span3{flex:3}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .card-h{padding:15px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .card-h h3{margin:0;font-size:15px}
+    .card-h small{color:var(--muted)}
+    .card-b{padding:18px}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px}
+    .stat{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:17px;box-shadow:var(--shadow);position:relative;overflow:hidden;min-height:112px}
+    .stat:after{content:"";position:absolute;right:-22px;top:-22px;width:90px;height:90px;border-radius:50%;background:currentColor;opacity:.08}
+    .stat .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;background:currentColor;margin-bottom:11px;font-size:16px}
+    .stat .v{font-size:24px;font-weight:750;color:var(--text);line-height:1.1}
+    .stat .l{font-size:12px;color:var(--muted);margin-top:4px}
+    .c-primary{color:var(--primary)}.c-teal{color:var(--teal)}.c-violet{color:var(--violet)}.c-amber{color:var(--amber)}
+    .btn{border:1px solid transparent;border-radius:9px;padding:8px 13px;font-size:12.5px;font-weight:650;display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;color:var(--text)}
+    .btn:hover{filter:brightness(.97)}
+    .btn.primary{background:var(--primary);color:#fff}
+    .btn.success{background:var(--success);color:#fff}
+    .btn.danger{background:var(--danger);color:#fff}
+    .btn.ghost{background:#fff;border-color:var(--border)}
+    .btn.sm{padding:5px 9px;font-size:11.5px}
+    .btn-group{display:inline-flex;gap:5px;flex-wrap:wrap}
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{background:#f8fafc;color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;text-align:left;padding:12px 14px;border-bottom:1px solid var(--border);white-space:nowrap}
+    td{padding:11px 14px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+    tbody tr:last-child td{border-bottom:0}
+    tbody tr:hover{background:#fafbff}
+    tfoot td{background:#f8fafc;font-weight:700}
+    .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:#eef2ff;color:var(--primary2)}
+    .badge.pass{background:#dcfce7;color:#047857}
+    .badge.fail{background:#ffe4e6;color:#be123c}
+    .badge.off{background:#f1f5f9;color:var(--muted)}
+    .grade{display:inline-grid;place-items:center;min-width:30px;padding:3px 7px;border-radius:7px;background:#eef2ff;color:var(--primary2);font-weight:750;font-size:12px}
+    .muted{color:var(--muted)}
+    .small{font-size:12px}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
+    .toolbar .field{min-width:190px;flex:1}
+    .toolbar label{margin-top:0}
+    .alert{padding:11px 14px;border-radius:10px;margin-bottom:14px;font-size:13px;background:#eef2ff;color:var(--primary2);border:1px solid #c7d2fe}
+    .alert.warn{background:#fffbeb;color:#92400e;border-color:#fde68a}
+    .info{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 24px}
+    .info>div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed var(--border)}
+    .info>div:last-child{border-bottom:0}
+    .info span{color:var(--muted)}
+    .chart{width:100%;height:auto;display:block}
+    .chart-box{min-height:180px}
+    .notif{display:flex;gap:12px;padding:14px 18px;border-bottom:1px solid #f1f5f9}
+    .notif:last-child{border-bottom:0}
+    .notif .ic{width:34px;height:34px;flex:0 0 34px;border-radius:9px;display:grid;place-items:center;background:#eef2ff;color:var(--primary)}
+    .notif.unread{background:#f8faff}
+    .toast{position:fixed;right:22px;bottom:22px;background:var(--navy);color:#fff;padding:13px 17px;border-radius:11px;box-shadow:0 12px 30px rgba(15,23,42,.25);z-index:99;font-size:13px;max-width:340px}
+    .modal{position:fixed;inset:0;background:rgba(15,23,42,.5);display:grid;place-items:center;z-index:80;padding:18px}
+    .modal .card{width:100%;max-width:760px;max-height:90vh;overflow:auto}
+    .pill{background:rgba(99,102,241,.16);color:#a5b4fc;padding:7px 11px;border-radius:20px;font-size:11px}
+    .empty{text-align:center;color:var(--muted);padding:36px 14px}
+    .mark-in{width:82px;margin:0 auto;text-align:center}
+
+    @media(max-width:1100px){
+      .sidebar{transform:translateX(-100%);transition:.25s}
+      .sidebar.open{transform:translateX(0)}
+      .backdrop.show{display:block;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:45}
+      .main{margin-left:0;width:100%}
+      .toggle{display:grid;place-items:center}
+      .auth-wrap{grid-template-columns:1fr}
+      .auth-brand{min-height:280px;padding:30px 26px}
+      .auth-brand h1{margin:36px 0 10px;font-size:30px}
+    }
+    @media(max-width:640px){
+      .content{padding:16px 13px}
+      .topbar{padding:0 13px}
+      .auth-card{padding:24px}
+      .info>div{flex-direction:column;gap:2px}
+    }
+    @media print{
+      body{background:#fff}
+      .sidebar,.topbar,.footer,.no-print,.toast,.modal{display:none!important}
+      .main{margin:0;width:100%}
+      .content{padding:0}
+      .card{border:0;box-shadow:none}
+      .print-head{display:block!important}
+    }
+    .print-head{display:none;margin-bottom:20px;text-align:center}
+  </style>
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="loginView" class="auth-wrap">
+  <div class="auth-brand">
+    <div class="logo"><div class="logo-mark">🎓</div><div>ExamTrack<small style="display:block;font-size:10px;color:#94a3b8;letter-spacing:.4px">RESULT MANAGEMENT SYSTEM</small></div></div>
+    <h1>Examinations made simple.<br>Results made clear.</h1>
+    <p>A complete offline demonstration of the Examination &amp; Student Result Management System — no installation, no server, no command prompt.</p>
+    <div class="feature"><i>✓</i><span>Role-based admin &amp; student dashboards</span></div>
+    <div class="feature"><i>✓</i><span>Marks, grades, GPA, ranks and analytics</span></div>
+    <div class="feature"><i>✓</i><span>Printable digital marksheets</span></div>
+    <div class="auth-foot">Offline edition · works directly from this file</div>
+  </div>
+  <div class="auth-form">
+    <div class="auth-card">
+      <h2>Welcome back</h2>
+      <p>Sign in to continue to ExamTrack.</p>
+      <form id="loginForm">
+        <label for="identifier">Username</label>
+        <input id="identifier" autocomplete="username" placeholder="admin or student1" required>
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" placeholder="Enter password" required>
+        <button class="btn primary" style="width:100%;justify-content:center;margin-top:20px;padding:11px" type="submit">Sign in →</button>
+      </form>
+      <div class="hint">
+        <b>Admin:</b> admin / Admin@123<br>
+        <b>Student:</b> student1 … student8 / Student@123
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="appView" class="shell hidden">
+  <aside id="sidebar" class="sidebar">
+    <div class="logo"><div class="logo-mark">🎓</div><div>ExamTrack<small style="display:block;font-size:10px;color:#94a3b8">OFFLINE EDITION</small></div></div>
+    <nav id="nav" class="nav"></nav>
+    <div class="side-foot"><span class="pill" id="rolePill">Admin</span></div>
+  </aside>
+  <div id="backdrop" class="backdrop"></div>
+  <div class="main">
+    <header class="topbar">
+      <button id="menuBtn" class="toggle" aria-label="Menu">☰</button>
+      <div><div class="top-title" id="topTitle">Dashboard</div><div class="top-sub" id="topSub">Overview</div></div>
+      <div class="spacer"></div>
+      <button class="btn ghost sm" data-view="settings">⚙ Settings</button>
+      <div class="avatar" id="avatar">A</div>
+      <button class="btn danger sm" id="logoutBtn">Sign out</button>
+    </header>
+    <main class="content" id="content"></main>
+    <footer class="footer"><span>ExamTrack · Offline demonstration</span><span>All data is saved in this browser only</span></footer>
+  </div>
+</div>
+<div id="toastRoot"></div>
+<div id="modalRoot"></div>
+
+<script>
+/* ============================================================
+   ExamTrack Offline Edition — no server, no external libraries.
+   ============================================================ */
+(function(){
+  "use strict";
+
+  var KEY = "examtrack_offline_v1";
+  var subjects = [
+    {code:"IT101",name:"Programming in C",credits:3,sem:1},
+    {code:"IT102",name:"Digital Logic",credits:3,sem:1},
+    {code:"IT103",name:"Business Communication",credits:2,sem:1},
+    {code:"IT104",name:"Computer Fundamentals",credits:3,sem:1}
+  ];
+  var seedStudents = [
+    ["STU001","Aarav","Sharma","aarav@example.com"],
+    ["STU002","Diya","Verma","diya@example.com"],
+    ["STU003","Rohan","Patel","rohan@example.com"],
+    ["STU004","Meera","Iyer","meera@example.com"],
+    ["STU005","Arjun","Nair","arjun@example.com"],
+    ["STU006","Sneha","Reddy","sneha@example.com"],
+    ["STU007","Kabir","Singh","kabir@example.com"],
+    ["STU008","Ananya","Das","ananya@example.com"]
+  ];
+  var students = seedStudents.map(function(s,i){
+    return {id:i+1,code:s[0],first:s[1],last:s[2],email:s[3],course:"BSc IT",semester:1,
+      phone:"98765"+(40001+i),dob:"2004-0"+((i%9)+1)+"-1"+((i%9)+1),
+      address:"Demo Student Hostel, College Campus",admission:"2026-07-10"};
+  });
+  var exams = [
+    {id:1,name:"Semester 1 — Midterm",type:"Midterm",year:"2026-27",max:100,published:false,date:"2026-09-20"},
+    {id:2,name:"Semester 1 — Final",type:"Final",year:"2026-27",max:100,published:true,date:"2027-01-15"}
+  ];
+  var gradeScale=[
+    {min:90,grade:"O",point:10},{min:80,grade:"A+",point:9},{min:70,grade:"A",point:8},
+    {min:60,grade:"B+",point:7},{min:50,grade:"B",point:6},{min:40,grade:"C",point:5},
+    {min:35,grade:"D",point:4},{min:0,grade:"F",point:0}
+  ];
+
+  function gradeFor(p){for(var i=0;i<gradeScale.length;i++){if(p>=gradeScale[i].min)return gradeScale[i];}return gradeScale[gradeScale.length-1];}
+  function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  function num(v,d){var n=Number(v||0);return n.toLocaleString("en-IN",{minimumFractionDigits:d||0,maximumFractionDigits:d||0});}
+  function now(){return new Date().toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"});}
+  function mkey(eid,sid,code){return eid+":"+sid+":"+code;}
+  function initials(name){return name.split(" ").map(function(p){return p[0];}).join("").slice(0,2).toUpperCase();}
+  function studentById(id){for(var i=0;i<students.length;i++){if(students[i].id===+id)return students[i];}return null;}
+  function subjectByCode(c){for(var i=0;i<subjects.length;i++){if(subjects[i].code===c)return subjects[i];}return null;}
+
+  function freshState(){
+    var users=[{username:"admin",password:"Admin@123",role:"admin",name:"Administrator"}];
+    students.forEach(function(s,i){users.push({username:"student"+(i+1),password:"Student@123",role:"student",name:s.first+" "+s.last,studentId:s.id});});
+    var marks={};
+    exams.forEach(function(ex){
+      students.forEach(function(st){
+        subjects.forEach(function(sub,idx){
+          var v=38+((st.id*7+idx*11+ex.id*3)%59);
+          marks[mkey(ex.id,st.id,sub.code)]=v;
+        });
+      });
+    });
+    var state={users:users,marks:marks,results:{},notifications:[
+      {id:1,title:"Final examination results published",message:"Semester 1 final results are now available. Open Results to view your marksheet.",audience:"students",date:"2026-11-26 10:00",reads:[]},
+      {id:2,title:"Welcome to ExamTrack",message:"This is the offline demonstration. Your changes are saved in this browser.",audience:"all",date:"2026-11-26 09:00",reads:[]}
+    ],audits:[],session:null};
+    state.audits.push({id:1,action:"SYSTEM",detail:"Offline demo data initialised",user:"system",date:now()});
+    recalc(state);
+    return state;
+  }
+
+  function recalc(st){
+    var output={};
+    exams.forEach(function(ex){
+      var rows=[];
+      students.forEach(function(stu){
+        var ms=subjects.map(function(sub){return {sub:sub,value:Number(st.marks[mkey(ex.id,stu.id,sub.code)]||0)};});
+        var obtained=0,total=0,weighted=0,credits=0,allPass=true;
+        ms.forEach(function(m){
+          obtained+=m.value;total+=ex.max;
+          var g=gradeFor((m.value/ex.max)*100);
+          weighted+=g.point*m.sub.credits;credits+=m.sub.credits;
+          if(m.value<ex.max*0.35)allPass=false;
+        });
+        var pct=(obtained/total)*100;
+        var g=gradeFor(pct);
+        var status=(pct>=35&&allPass)?"pass":"fail";
+        rows.push({examId:ex.id,studentId:stu.id,obtained:obtained,total:total,percentage:pct,grade:g.grade,
+          gpa:credits?weighted/credits:0,status:status,marks:ms,published:ex.published});
+      });
+      rows.sort(function(a,b){return b.percentage-a.percentage||b.obtained-a.obtained;});
+      var rank=0,prev=null;
+      rows.forEach(function(r,i){
+        if(prev===null||r.percentage!==prev){rank=i+1;prev=r.percentage;}
+        r.rank=rank;
+        output[ex.id+":"+r.studentId]=r;
+      });
+    });
+    st.results=output;
+  }
+  var state;
+  try{
+    var raw=localStorage.getItem(KEY);
+    state=raw?JSON.parse(raw):freshState();
+  }catch(e){state=freshState();}
+  if(!state||!state.users||!state.marks)state=freshState();
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+  function audit(action,detail){
+    state.audits.unshift({id:Date.now(),action:action,detail:detail,user:current()?current().name:"system",date:now()});
+    if(state.audits.length>200)state.audits=state.audits.slice(0,200);
+    save();
+  }
+  function current(){return state.session?state.users.filter(function(u){return u.username===state.session;})[0]:null;}
+  function myStudent(){var u=current();return u&&u.studentId?studentById(u.studentId):null;}
+  function visibleResults(){
+    var sid=myStudent();
+    return Object.keys(state.results).map(function(k){return state.results[k];})
+      .filter(function(r){return sid?r.studentId===sid.id:true;})
+      .filter(function(r){return sid?r.published:true;})
+      .sort(function(a,b){return b.examId-a.examId;});
+  }
+  function examById(id){return exams.filter(function(e){return e.id===+id;})[0];}
+
+  var view="dashboard";
+  var adminViews=[
+    {id:"dashboard",name:"Dashboard",ico:"◫"},
+    {id:"students",name:"Students",ico:"◉"},
+    {id:"subjects",name:"Subjects",ico:"▤"},
+    {id:"exams",name:"Examinations",ico:"✎"},
+    {id:"marks",name:"Enter Marks",ico:"✍"},
+    {id:"results",name:"Results",ico:"★"},
+    {id:"analytics",name:"Analytics",ico:"↗"},
+    {id:"notifications",name:"Notifications",ico:"✉"},
+    {id:"audit",name:"Audit Logs",ico:"≡"}
+  ];
+  var studentViews=[
+    {id:"dashboard",name:"Dashboard",ico:"◫"},
+    {id:"results",name:"My Results",ico:"★"},
+    {id:"analytics",name:"Performance",ico:"↗"},
+    {id:"profile",name:"My Profile",ico:"◉"},
+    {id:"notifications",name:"Notifications",ico:"✉"}
+  ];
+
+  function navHtml(){
+    var list=(current()&&current().role==="admin")?adminViews:studentViews;
+    var label=(current()&&current().role==="admin")?"Administration":"My Area";
+    return '<div class="nav-label">'+label+'</div>'+list.map(function(v){
+      return '<a href="#" data-view="'+v.id+'" class="'+(view===v.id?"active":"")+'"><span class="ico">'+v.ico+'</span><span>'+v.name+'</span></a>';
+    }).join("")+'<div class="nav-label">Account</div><a href="#" data-view="settings"><span class="ico">⚙</span><span>Settings</span></a>';
+  }
+
+  function pageHead(title,sub,actions){
+    return '<div class="page-head"><div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:end"><div><h1>'+esc(title)+'</h1><p>'+esc(sub)+'</p></div><div class="btn-group">'+(actions||"")+'</div></div></div>';
+  }
+  function statCard(color,icon,value,label){
+    return '<div class="stat c-'+color+'"><div class="ic">'+icon+'</div><div class="v">'+value+'</div><div class="l">'+label+'</div></div>';
+  }
+  function badge(status){return '<span class="badge '+status+'">'+status.charAt(0).toUpperCase()+status.slice(1)+'</span>';}
+
+  /* ---------- SVG charts (no libraries) ---------- */
+  function lineChart(labels,series){
+    var w=720,h=220,pad=38,n=labels.length||1;
+    var max=100,min=0;
+    var x=function(i){return pad+(i*(w-pad*2)/(Math.max(n-1,1)));};
+    var y=function(v){return h-pad-((v-min)/(max-min))*(h-pad*2);};
+    var grid="";
+    for(var g=0;g<=100;g+=20){grid+='<line x1="'+pad+'" y1="'+y(g)+'" x2="'+(w-pad)+'" y2="'+y(g)+'" stroke="#eef2f7"/><text x="6" y="'+(y(g)+4)+'" font-size="10" fill="#94a3b8">'+g+'%</text>';}
+    var paths=series.map(function(s,si){
+      var color=["#4f46e5","#0ea5a4","#f59e0b"][si%3];
+      var d=s.values.map(function(v,i){return (i?"L":"M")+x(i)+" "+y(v);}).join(" ");
+      var dots=s.values.map(function(v,i){return '<circle cx="'+x(i)+'" cy="'+y(v)+'" r="3.5" fill="'+color+'"><title>'+esc(s.name)+": "+num(v,1)+'%</title></circle>';}).join("");
+      return '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="2.5"/>'+dots;
+    }).join("");
+    var xl=labels.map(function(l,i){return '<text x="'+x(i)+'" y="'+(h-10)+'" text-anchor="middle" font-size="10" fill="#64748b">'+esc(l)+'</text>';}).join("");
+    return '<svg class="chart" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="xMidYMid meet">'+grid+paths+xl+'</svg>';
+  }
+  function barChart(labels,values){
+    var w=720,h=230,pad=38,n=values.length||1;
+    var bw=Math.min(52,(w-pad*2)/n*0.62);
+    var y=function(v){return h-pad-(v/100)*(h-pad*2);};
+    var grid="";
+    for(var g=0;g<=100;g+=20){grid+='<line x1="'+pad+'" y1="'+y(g)+'" x2="'+(w-pad)+'" y2="'+y(g)+'" stroke="#eef2f7"/><text x="6" y="'+(y(g)+4)+'" font-size="10" fill="#94a3b8">'+g+'%</text>';}
+    var bars=values.map(function(v,i){
+      var cx=pad+((i+0.5)*(w-pad*2)/n);
+      return '<rect x="'+(cx-bw/2)+'" y="'+y(v)+'" width="'+bw+'" height="'+(h-pad-y(v))+'" rx="5" fill="#4f46e5"><title>'+esc(labels[i])+': '+num(v,1)+'%</title></rect>'+
+        '<text x="'+cx+'" y="'+(y(v)-6)+'" text-anchor="middle" font-size="10" fill="#475569">'+num(v,0)+'</text>'+
+        '<text x="'+cx+'" y="'+(h-10)+'" text-anchor="middle" font-size="9" fill="#64748b">'+esc(labels[i])+'</text>';
+    }).join("");
+    return '<svg class="chart" viewBox="0 0 '+w+' '+h+'">'+grid+bars+'</svg>';
+  }
+
+  /* ---------- Views ---------- */
+  function dashboard(){
+    var results=visibleResults(),latest=results[0];
+    var pcts=results.map(function(r){return r.percentage;});
+    var avg=pcts.length?pcts.reduce(function(a,b){return a+b;},0)/pcts.length:0;
+    var best=pcts.length?Math.max.apply(null,pcts):0;
+    var cards='<div class="stats">'+
+      statCard("primary","★",results.length,"Results Published")+
+      statCard("teal","↗",num(avg,1)+"%","Average Percentage")+
+      statCard("violet","▲",num(best,1)+"%","Best Score")+
+      statCard("amber","◆",latest?num(latest.gpa,2):"—","Latest GPA")+'</div>';
+    var labels=exams.map(function(e){return e.name.replace("Semester 1 — ","");});
+    var avgSeries=exams.map(function(e){
+      var arr=students.map(function(s){return state.results[e.id+":"+s.id].percentage;});
+      return arr.reduce(function(a,b){return a+b;},0)/arr.length;
+    });
+    var mySeries=exams.map(function(e){var s=myStudent();return s?state.results[e.id+":"+s.id].percentage:avgSeries[e.id-1];});
+    var chart='<div class="card"><div class="card-h"><h3>Performance Trend</h3><small>Average vs '+(myStudent()?"your score":"pass mark")+'</small></div><div class="card-b chart-box">'+lineChart(labels,[{name:"Average",values:avgSeries},{name:myStudent()?"You":"Pass mark",values:myStudent()?mySeries:[35,35]}] )+'</div></div>';
+    var table='<div class="card"><div class="card-h"><h3>Recent Results</h3><button class="btn sm" data-view="results">View all</button></div><div class="table-wrap"><table><thead><tr><th>Examination</th><th>Student</th><th>%</th><th>Grade</th><th>GPA</th><th>Status</th><th></th></tr></thead><tbody>'+
+      (results.slice(0,6).map(function(r){
+        var st=studentById(r.studentId),ex=examById(r.examId);
+        return '<tr><td><b>'+esc(ex.name)+'</b><div class="small muted">'+esc(ex.year)+'</div></td><td>'+(myStudent()?esc(st.first+" "+st.last):esc(st.code))+'</td><td>'+num(r.percentage,1)+'%</td><td><span class="grade">'+r.grade+'</span></td><td>'+num(r.gpa,2)+'</td><td>'+badge(r.status)+'</td><td><button class="btn sm ghost" data-detail="'+r.examId+":"+r.studentId+'">View</button></td></tr>';
+      }).join("")||'<tr><td colspan="7" class="empty">No published results yet.</td></tr>')+'</tbody></table></div></div>';
+    var notes=state.notifications.slice(0,3).map(function(n){return '<div class="notif"><div class="ic">✉</div><div><b>'+esc(n.title)+'</b><div class="small muted">'+esc(n.message.slice(0,80))+'</div></div></div>';}).join("");
+    return pageHead("Hello, "+(myStudent()?myStudent().first:current().name)+" 👋",myStudent()?myStudent().course+" · Semester "+myStudent().semester:"System overview")+
+      cards+'<div class="row" style="margin-top:16px"><div class="span2">'+chart+'</div><div><div class="card"><div class="card-h"><h3>Notifications</h3><button class="btn sm" data-view="notifications">All</button></div>'+(notes||'<div class="empty">No notifications.</div>')+'</div>'+
+      (latest?'<div class="card" style="margin-top:16px"><div class="card-b"><div class="small muted">Latest result</div><h3 style="margin:6px 0">'+esc(examById(latest.examId).name)+'</h3><div style="font-size:34px;font-weight:750">'+num(latest.percentage,1)+'%</div><div class="btn-group" style="margin-top:12px"><span class="grade">'+latest.grade+'</span>'+badge(latest.status)+'</div><button class="btn primary" style="width:100%;margin-top:16px;justify-content:center" data-print="'+latest.examId+":"+latest.studentId+'">🖨 Print / Save Marksheet</button></div></div>':'')+'</div></div>'+table;
+  }
+
+  function studentsView(){
+    var q=(document.getElementById("studentSearch")||{}).value||"";
+    var list=students.filter(function(s){return (s.first+" "+s.last+" "+s.code+" "+s.email).toLowerCase().indexOf(q.toLowerCase())>=0;});
+    return pageHead("Students","Manage student records and their login accounts",'<button class="btn ghost" onclick="window.print()">🖨 Print</button>')+
+      '<div class="card"><div class="card-b"><div class="toolbar"><div class="field"><label>Search students</label><input id="studentSearch" value="'+esc(q)+'" placeholder="Name, code or email" oninput="App.rerender()"></div></div>'+
+      '<div class="table-wrap"><table><thead><tr><th>Code</th><th>Name</th><th>Course</th><th>Sem</th><th>Email</th><th>Username</th><th>Status</th></tr></thead><tbody>'+
+      (list.map(function(s){var u=state.users.filter(function(x){return x.studentId===s.id;})[0];return '<tr><td><span class="badge">'+esc(s.code)+'</span></td><td><b>'+esc(s.first+" "+s.last)+'</b></td><td>'+esc(s.course)+'</td><td>'+s.semester+'</td><td>'+esc(s.email)+'</td><td>'+esc(u?u.username:"—")+'</td><td><span class="badge pass">Active</span></td></tr>';}).join("")||'<tr><td colspan="7" class="empty">No matching students.</td></tr>')+'</tbody></table></div></div></div>';
+  }
+
+  function subjectsView(){
+    return pageHead("Subjects","Subjects mapped to BSc IT, Semester 1")+
+      '<div class="card"><div class="table-wrap"><table><thead><tr><th>Code</th><th>Subject</th><th>Credits</th><th>Semester</th><th>Status</th></tr></thead><tbody>'+
+      subjects.map(function(s){return '<tr><td><span class="badge">'+s.code+'</span></td><td><b>'+esc(s.name)+'</b></td><td>'+s.credits+'</td><td>'+s.sem+'</td><td><span class="badge pass">Active</span></td></tr>';}).join("")+'</tbody></table></div></div>';
+  }
+
+  function examsView(){
+    return pageHead("Examinations","Create, review and publish examination results")+
+      '<div class="card"><div class="table-wrap"><table><thead><tr><th>Examination</th><th>Type</th><th>Year</th><th>Max marks</th><th>Date</th><th>Published</th><th>Action</th></tr></thead><tbody>'+
+      exams.map(function(e){return '<tr><td><b>'+esc(e.name)+'</b></td><td>'+esc(e.type)+'</td><td>'+esc(e.year)+'</td><td>'+e.max+'</td><td>'+esc(e.date)+'</td><td>'+(e.published?'<span class="badge pass">Yes</span>':'<span class="badge off">No</span>')+'</td><td><button class="btn sm '+(e.published?"ghost":"primary")+'" data-publish="'+e.id+'">'+(e.published?"Unpublish":"Publish")+'</button></td></tr>';}).join("")+'</tbody></table></div></div>'+
+      '<div class="alert" style="margin-top:14px">Publishing makes results visible to students. Unpublishing hides them again.</div>';
+  }
+
+  function marks(){
+    var exId=Number((document.getElementById("examFilter")||{}).value||exams[0].id);
+    var ex=examById(exId)||exams[0];
+    var head='<div class="card"><div class="card-h"><h3>Marks Grid — '+esc(ex.name)+'</h3><button class="btn primary sm" data-save-marks="'+ex.id+'">Save marks</button></div><div class="card-b"><div class="toolbar"><div class="field"><label>Examination</label><select id="examFilter" onchange="App.rerender()">'+exams.map(function(e){return '<option value="'+e.id+'" '+(e.id===ex.id?"selected":"")+'>'+esc(e.name)+'</option>';}).join("")+'</select></div></div>'+
+      '<div class="table-wrap"><table><thead><tr><th>Student</th>'+subjects.map(function(s){return '<th style="text-align:center">'+s.code+'<div class="small muted">'+s.credits+' cr</div></th>';}).join("")+'<th>Total</th></tr></thead><tbody>';
+    var rows=students.map(function(st){
+      var total=subjects.reduce(function(a,s){return a+Number(state.marks[mkey(ex.id,st.id,s.code)]||0);},0);
+      return '<tr><td><b>'+esc(st.first+" "+st.last)+'</b><div class="small muted">'+esc(st.code)+'</div></td>'+subjects.map(function(s){
+        var v=state.marks[mkey(ex.id,st.id,s.code)];
+        return '<td><input class="mark-in" type="number" min="0" max="'+ex.max+'" value="'+v+'" data-mark="'+ex.id+":"+st.id+":"+s.code+'"></td>';
+      }).join("")+'<td><b>'+num(total,0)+'</b> / '+num(ex.max*subjects.length,0)+'</td></tr>';
+    }).join("");
+    return pageHead("Enter Marks","Fill the grid and save — grades, GPA, ranks and results recalculate instantly")+head+rows+'</tbody></table></div></div></div>';
+  }
+
+  function results(){
+    var rs=visibleResults();
+    var f=(document.getElementById("resultExamFilter")||{}).value||"";
+    if(f)rs=rs.filter(function(r){return r.examId===+f;});
+    return pageHead("Results",myStudent()?"Your published results":"Published results with grades, GPA and ranks")+
+      '<div class="card"><div class="card-b"><div class="toolbar"><div class="field"><label>Examination</label><select id="resultExamFilter" onchange="App.rerender()"><option value="">All examinations</option>'+exams.map(function(e){return '<option value="'+e.id+'" '+(f==e.id?"selected":"")+'>'+esc(e.name)+'</option>';}).join("")+'</select></div></div>'+
+      '<div class="table-wrap"><table><thead><tr><th>Examination</th><th>Student</th><th>Marks</th><th>%</th><th>Grade</th><th>GPA</th><th>Rank</th><th>Status</th><th></th></tr></thead><tbody>'+
+      (rs.map(function(r){var st=studentById(r.studentId);return '<tr><td><b>'+esc(examById(r.examId).name)+'</b></td><td>'+(myStudent()?"You":esc(st.first+" "+st.last))+'</td><td>'+num(r.obtained)+' / '+num(r.total)+'</td><td>'+num(r.percentage,1)+'%</td><td><span class="grade">'+r.grade+'</span></td><td>'+num(r.gpa,2)+'</td><td>'+r.rank+'</td><td>'+badge(r.status)+'</td><td><div class="btn-group"><button class="btn sm ghost" data-detail="'+r.examId+":"+r.studentId+'">View</button><button class="btn sm primary" data-print="'+r.examId+":"+r.studentId+'">PDF</button></div></td></tr>';}).join("")||'<tr><td colspan="9" class="empty">No published results yet.</td></tr>')+'</tbody></table></div></div></div>';
+  }
+
+  function analytics(){
+    var labels=exams.map(function(e){return e.name.replace("Semester 1 — ","");});
+    var perExam=exams.map(function(e){
+      var arr=students.map(function(s){return state.results[e.id+":"+s.id].percentage;});
+      return arr.reduce(function(a,b){return a+b;},0)/arr.length;
+    });
+    var subAvg=subjects.map(function(sub){
+      var vals=[];exams.forEach(function(e){students.forEach(function(s){vals.push(Number(state.marks[mkey(e.id,s.id,sub.code)]));});});
+      return vals.reduce(function(a,b){return a+b;},0)/vals.length;
+    });
+    var mine=myStudent();
+    var mineVals=exams.map(function(e){return mine?state.results[e.id+":"+mine.id].percentage:0;});
+    return pageHead("Performance Analytics","Visual summary generated from saved marks")+
+      '<div class="row"><div class="span2"><div class="card"><div class="card-h"><h3>Examination Average</h3></div><div class="card-b chart-box">'+lineChart(labels,[{name:"Average",values:perExam}].concat(mine?[{name:"Your score",values:mineVals}]:[]))+'</div></div></div>'+
+      '<div><div class="card"><div class="card-b"><div class="info"><div><span>Examinations</span><b>'+exams.length+'</b></div><div><span>Students</span><b>'+students.length+'</b></div><div><span>Subjects</span><b>'+subjects.length+'</b></div><div><span>Pass threshold</span><b>35%</b></div><div><span>Overall average</span><b>'+num(perExam.reduce(function(a,b){return a+b;},0)/perExam.length,1)+'%</b></div></div></div></div></div></div>'+
+      '<div class="card" style="margin-top:16px"><div class="card-h"><h3>Subject-wise Average</h3></div><div class="card-b chart-box">'+barChart(subjects.map(function(s){return s.code;}),subAvg)+'</div></div>';
+  }
+
+  function profile(){
+    var s=myStudent();if(!s)return '<div class="alert">No student profile linked to this account.</div>';
+    return pageHead("My Profile","Personal and academic information")+
+      '<div class="row"><div><div class="card"><div class="card-b" style="text-align:center"><div class="avatar" style="width:82px;height:82px;font-size:26px;border-radius:20px;margin:0 auto 14px">'+initials(s.first+" "+s.last)+'</div><h3 style="margin:0">'+esc(s.first+" "+s.last)+'</h3><div class="muted">'+esc(s.code)+'</div><div style="margin-top:12px"><span class="badge pass">Active</span></div></div></div></div>'+
+      '<div class="span2"><div class="card"><div class="card-h"><h3>Academic &amp; Personal Details</h3></div><div class="card-b"><div class="info">'+
+      [["Course",s.course],["Semester",s.semester],["Admission date",s.admission],["Email",s.email],["Phone",s.phone],["Date of birth",s.dob],["Address",s.address],["Username",current().username]].map(function(p){return '<div><span>'+p[0]+'</span><b>'+esc(p[1])+'</b></div>';}).join("")+'</div></div></div></div></div>';
+  }
+
+  function notifications(){
+    var u=current();var mine=state.notifications.filter(function(n){return n.audience==="all"||(n.audience==="students"&&u.role==="student")||(n.audience==="admins"&&u.role==="admin");});
+    var form=(u.role==="admin")?'<div class="card" style="margin-bottom:16px"><div class="card-h"><h3>New notification</h3></div><div class="card-b"><div class="toolbar"><div class="field"><label>Title</label><input id="notifTitle" placeholder="Announcement title"></div><div class="field"><label>Message</label><input id="notifMsg" placeholder="Short message"></div><div class="field"><label>Audience</label><select id="notifAud"><option value="all">Everyone</option><option value="students">Students</option><option value="admins">Admins</option></select></div><div><button class="btn primary" data-add-notif>Post</button></div></div></div></div>':"";
+    return pageHead("Notifications","Announcements and updates")+form+'<div class="card">'+
+      (mine.map(function(n){var read=(n.reads||[]).indexOf(u.username)>=0;return '<div class="notif '+(read?"":"unread")+'"><div class="ic">'+(read?"✓":"✉")+'</div><div style="flex:1"><div><b>'+esc(n.title)+'</b> '+(read?"":'<span class="badge">New</span>')+'</div><div class="small muted">'+esc(n.message)+'</div><div class="small muted">'+esc(n.date)+'</div></div>'+(read?"":'<button class="btn sm ghost" data-read="'+n.id+'">Mark read</button>')+'</div>';}).join("")||'<div class="empty">No notifications yet.</div>')+'</div>';
+  }
+
+  function auditLogs(){
+    return pageHead("Audit Logs","Recent actions recorded by the offline application")+
+      '<div class="card"><div class="table-wrap"><table><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Details</th></tr></thead><tbody>'+
+      state.audits.map(function(a){return '<tr><td>'+esc(a.date)+'</td><td>'+esc(a.user)+'</td><td><span class="badge">'+esc(a.action)+'</span></td><td>'+esc(a.detail)+'</td></tr>';}).join("")+'</tbody></table></div></div>';
+  }
+
+  function settings(){
+    var u=current();
+    return pageHead("Settings","Manage your offline account")+
+      '<div class="row"><div><div class="card"><div class="card-h"><h3>Change password</h3></div><div class="card-b"><label>Current password</label><input id="oldPass" type="password"><label>New password</label><input id="newPass" type="password"><button class="btn primary" style="margin-top:14px" data-change-pass>Update password</button></div></div></div>'+
+      '<div><div class="card"><div class="card-h"><h3>Demo data</h3></div><div class="card-b"><p class="muted small">Restore all students, marks, results and notifications to their original demo state.</p><button class="btn danger" data-reset>Reset demo data</button></div></div></div></div>';
+  }
+
+  function detail(examId,studentId){
+    var r=state.results[examId+":"+studentId],s=studentById(studentId),e=examById(examId);
+    if(!r)return;
+    var body='<div class="card"><div class="card-h"><h3>'+esc(e.name)+' — '+esc(s.first+" "+s.last)+'</h3><button class="btn ghost sm" data-close>✕ Close</button></div><div class="card-b">'+
+      '<div class="stats" style="margin-bottom:14px">'+statCard("primary","%",num(r.percentage,1)+"%","Percentage")+statCard("teal","◆",num(r.gpa,2),"GPA")+statCard("violet","★",r.grade,"Grade")+statCard("amber","#",r.rank,"Rank")+'</div>'+
+      '<div class="table-wrap"><table><thead><tr><th>Subject</th><th>Credits</th><th>Max</th><th>Obtained</th><th>%</th><th>Grade</th><th>Status</th></tr></thead><tbody>'+
+      r.marks.map(function(m){var p=m.value/e.max*100;var g=gradeFor(p);return '<tr><td><b>'+esc(m.sub.code)+'</b> '+esc(m.sub.name)+'</td><td>'+m.sub.credits+'</td><td>'+e.max+'</td><td>'+m.value+'</td><td>'+num(p,1)+'%</td><td><span class="grade">'+g.grade+'</span></td><td>'+(p>=35?'<span class="badge pass">Pass</span>':'<span class="badge fail">Fail</span>')+'</td></tr>';}).join("")+
+      '</tbody><tfoot><tr><td colspan="3">Total '+num(r.total)+'</td><td colspan="3">Obtained '+num(r.obtained)+'</td><td>'+num(r.percentage,1)+'%</td></tr></tfoot></table></div>'+
+      '<div class="btn-group" style="margin-top:16px"><button class="btn primary" data-print="'+examId+":"+studentId+'">🖨 Print / Save as PDF</button></div></div></div>';
+    document.getElementById("modalRoot").innerHTML='<div class="modal" data-close>'+body+'</div>';
+  }
+
+  function printMarksheet(examId,studentId){
+    var r=state.results[examId+":"+studentId],s=studentById(studentId),e=examById(examId);
+    if(!r)return;
+    var rows=r.marks.map(function(m){var p=m.value/e.max*100;var g=gradeFor(p);return "<tr><td>"+esc(m.sub.code)+" - "+esc(m.sub.name)+"</td><td>"+m.sub.credits+"</td><td>"+e.max+"</td><td>"+m.value+"</td><td>"+num(p,1)+"%</td><td>"+g.grade+"</td><td>"+(p>=35?"PASS":"FAIL")+"</td></tr>";}).join("");
+    var html='<!doctype html><html><head><meta charset="utf-8"><title>Marksheet - '+esc(s.first+" "+s.last)+'</title><style>'+
+      'body{font-family:Segoe UI,Arial,sans-serif;color:#111;margin:32px}h1{text-align:center;margin:0 0 4px;font-size:24px}.sub{text-align:center;color:#555;margin-bottom:24px}'+
+      'table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #bbb;padding:8px;text-align:left}th{background:#eee}'+
+      '.sum{display:flex;gap:16px;flex-wrap:wrap;margin-top:20px}.box{flex:1;border:1px solid #ccc;padding:12px;border-radius:8px}.big{font-size:26px;font-weight:bold}'+
+      '.sign{margin-top:60px;display:flex;justify-content:space-between}</style></head><body>'+
+      '<h1>EXAMTRACK — DIGITAL MARKSHEET</h1><div class="sub">'+esc(e.name)+' · '+esc(e.year)+' · Semester '+s.semester+'</div>'+
+      '<p><b>Student:</b> '+esc(s.first+" "+s.last)+' &nbsp; <b>Code:</b> '+esc(s.code)+' &nbsp; <b>Course:</b> '+esc(s.course)+'</p>'+
+      '<table><thead><tr><th>Subject</th><th>Credits</th><th>Max</th><th>Obtained</th><th>%</th><th>Grade</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+      '<div class="sum"><div class="box">Percentage<div class="big">'+num(r.percentage,1)+'%</div></div><div class="box">Grade<div class="big">'+r.grade+'</div></div><div class="box">GPA<div class="big">'+num(r.gpa,2)+'</div></div><div class="box">Rank<div class="big">'+r.rank+'</div></div></div>'+
+      '<p style="margin-top:18px"><b>Result:</b> '+r.status.toUpperCase()+' &nbsp; · &nbsp; <b>Total:</b> '+num(r.obtained)+' / '+num(r.total)+'</p>'+
+      '<div class="sign"><span>Controller of Examinations</span><span>Principal</span></div></body></html>';
+    var w=window.open("","_blank");
+    if(!w){alert("Please allow pop-ups to print the marksheet.");return;}
+    w.document.open();w.document.write(html);w.document.close();
+    setTimeout(function(){w.focus();w.print();},350);
+    audit("PDF","Printed marksheet for "+s.code+" / "+e.name);
+  }
+
+  function toast(msg){
+    var root=document.getElementById("toastRoot");
+    root.innerHTML='<div class="toast">'+esc(msg)+'</div>';
+    setTimeout(function(){root.innerHTML="";},2800);
+  }
+
+  function render(){
+    if(!current()){document.getElementById("loginView").classList.remove("hidden");document.getElementById("appView").classList.add("hidden");return;}
+    document.getElementById("loginView").classList.add("hidden");
+    document.getElementById("appView").classList.remove("hidden");
+    document.getElementById("nav").innerHTML=navHtml();
+    document.getElementById("rolePill").textContent=current().role==="admin"?"Administrator":"Student";
+    document.getElementById("avatar").textContent=initials(current().name);
+    var names={dashboard:"Dashboard",students:"Students",subjects:"Subjects",exams:"Examinations",marks:"Enter Marks",results:"Results",analytics:"Analytics",notifications:"Notifications",audit:"Audit Logs",profile:"My Profile",settings:"Settings"};
+    document.getElementById("topTitle").textContent=names[view]||"Dashboard";
+    document.getElementById("topSub").textContent=current().role==="admin"?"Admin workspace":"Student workspace";
+    var html="";
+    if(view==="dashboard")html=dashboard();
+    else if(view==="students"&&current().role==="admin")html=studentsView();
+    else if(view==="subjects"&&current().role==="admin")html=subjectsView();
+    else if(view==="exams"&&current().role==="admin")html=examsView();
+    else if(view==="marks"&&current().role==="admin")html=marks();
+    else if(view==="results")html=results();
+    else if(view==="analytics")html=analytics();
+    else if(view==="profile"&&current().role==="student")html=profile();
+    else if(view==="notifications")html=notifications();
+    else if(view==="audit"&&current().role==="admin")html=auditLogs();
+    else if(view==="settings")html=settings();
+    else html=dashboard();
+    document.getElementById("content").innerHTML=html;
+  }
+
+  /* ---------- Events ---------- */
+  document.getElementById("loginForm").addEventListener("submit",function(ev){
+    ev.preventDefault();
+    var id=document.getElementById("identifier").value.trim();
+    var pw=document.getElementById("password").value;
+    var user=state.users.filter(function(u){return u.username.toLowerCase()===id.toLowerCase();})[0];
+    if(!user||user.password!==pw){toast("Invalid username or password.");return;}
+    state.session=user.username;save();view="dashboard";audit("LOGIN","Signed in as "+user.role);render();
+  });
+  document.getElementById("logoutBtn").addEventListener("click",function(){audit("LOGOUT","Signed out");state.session=null;save();view="dashboard";render();});
+  document.getElementById("menuBtn").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");document.getElementById("backdrop").classList.toggle("show");});
+  document.getElementById("backdrop").addEventListener("click",function(){document.getElementById("sidebar").classList.remove("open");document.getElementById("backdrop").classList.remove("show");});
+
+  document.addEventListener("click",function(ev){
+    var t=ev.target.closest("[data-view],[data-detail],[data-print],[data-publish],[data-read],[data-save-marks],[data-add-notif],[data-change-pass],[data-reset],[data-close]");
+    if(!t)return;
+    ev.preventDefault();
+    if(t.dataset.view){view=t.dataset.view;document.getElementById("sidebar").classList.remove("open");render();return;}
+    if(t.dataset.detail){var p=t.dataset.detail.split(":");detail(+p[0],+p[1]);return;}
+    if(t.dataset.print){var q=t.dataset.print.split(":");printMarksheet(+q[0],+q[1]);return;}
+    if(t.dataset.close){document.getElementById("modalRoot").innerHTML="";return;}
+    if(t.dataset.publish){
+      var e=examById(t.dataset.publish);e.published=!e.published;recalc(state);save();
+      audit(e.published?"PUBLISH":"UNPUBLISH",e.name);toast(e.published?"Results published.":"Results hidden.");render();return;
+    }
+    if(t.dataset.read){
+      var n=state.notifications.filter(function(x){return x.id===+t.dataset.read;})[0];
+      if(n){n.reads=n.reads||[];if(n.reads.indexOf(current().username)<0)n.reads.push(current().username);save();toast("Marked as read.");render();}
+      return;
+    }
+    if(t.dataset.saveMarks){
+      var exId=+t.dataset.saveMarks,count=0;
+      document.querySelectorAll("[data-mark]").forEach(function(inp){
+        var k=inp.dataset.mark;state.marks[k]=Math.max(0,Math.min(100,Number(inp.value)||0));count++;
+      });
+      recalc(state);save();audit("MARKS","Saved "+count+" marks for "+(examById(exId)||{}).name);toast(count+" marks saved. Results recalculated.");render();return;
+    }
+    if(t.hasAttribute("data-add-notif")){
+      var title=document.getElementById("notifTitle").value.trim(),msg=document.getElementById("notifMsg").value.trim();
+      if(!title||!msg){toast("Enter a title and message.");return;}
+      state.notifications.unshift({id:Date.now(),title:title,message:msg,audience:document.getElementById("notifAud").value,date:now(),reads:[]});
+      save();audit("NOTIFICATION","Posted: "+title);toast("Notification posted.");render();return;
+    }
+    if(t.hasAttribute("data-change-pass")){
+      var old=document.getElementById("oldPass").value,pw=document.getElementById("newPass").value;
+      if(old!==current().password){toast("Current password is incorrect.");return;}
+      if(pw.length<6){toast("New password must be at least 6 characters.");return;}
+      current().password=pw;save();audit("SECURITY","Password changed");toast("Password updated.");document.getElementById("oldPass").value="";document.getElementById("newPass").value="";return;
+    }
+    if(t.hasAttribute("data-reset")){
+      if(!confirm("Reset all demo data? Your local changes will be lost."))return;
+      state=freshState();save();toast("Demo data restored.");render();return;
+    }
+  });
+
+  window.App={rerender:render};
+  render();
+})();
+</script>
+</body>
+</html>

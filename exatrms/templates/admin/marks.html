@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Enter Marks{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Enter Marks</h1>
+  <p class="page-subtitle">Enter or update subject marks. Results, grades and GPA recalculate automatically.</p>
+</div>
+
+<div class="card app-card mb-4">
+  <div class="card-body">
+    <form class="row g-3 align-items-end" method="get">
+      <div class="col-md-5">
+        <label class="form-label" for="exam_id">Examination *</label>
+        <select class="form-select" id="exam_id" name="exam_id" data-auto-submit required>
+          <option value="">Select examination</option>
+          {% for item in exams %}<option value="{{ item.id }}" {{ 'selected' if exam and item.id == exam.id }}>{{ item.name }} · {{ item.academic_year }} {{ '(published)' if item.is_published }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="student_id">Student (optional filter)</label>
+        <select class="form-select" id="student_id" name="student_id" data-auto-submit>
+          <option value="">All students in this exam</option>
+          {% for student in students %}<option value="{{ student.id }}" {{ 'selected' if student.id == student_id }}>{{ student.student_code }} — {{ student.full_name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-funnel me-1"></i>Load Marksheet</button></div>
+    </form>
+  </div>
+</div>
+
+{% if not exam %}
+  <div class="card app-card"><div class="card-body text-center py-5">
+    <i class="bi bi-pencil-square display-4 text-muted"></i>
+    <h4 class="mt-3">Select an examination</h4>
+    <p class="text-muted mb-0">Choose an exam above to load the students and subjects for mark entry.</p>
+  </div></div>
+{% elif not students or not subjects %}
+  <div class="alert alert-warning">No students or subjects match this examination. Add students to {{ exam.course.code }} / Semester {{ exam.semester.number }} and create subjects first.</div>
+{% else %}
+  <div class="alert alert-light border d-flex flex-wrap justify-content-between gap-2">
+    <div><strong>{{ exam.name }}</strong> · {{ exam.course.code }} · Semester {{ exam.semester.number }}</div>
+    <div>Maximum marks per subject: <strong>{{ exam.max_marks|num }}</strong> · Students: <strong>{{ students|length }}</strong> · Subjects: <strong>{{ subjects|length }}</strong></div>
+  </div>
+  <form method="post" class="card app-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="exam_id" value="{{ exam.id }}">
+    {% if student_id %}<input type="hidden" name="student_id" value="{{ student_id }}">{% endif %}
+    <div class="table-responsive">
+      <table class="table app-table table-bordered marks-table mb-0">
+        <thead>
+          <tr>
+            <th class="sticky-col">Student</th>
+            {% for subject in subjects %}<th class="text-center">{{ subject.code }}<div class="small fw-normal text-muted">{{ subject.name }} · {{ subject.credits }} cr</div></th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in students %}
+            <tr>
+              <td class="sticky-col"><strong>{{ student.student_code }}</strong><div class="small text-muted">{{ student.full_name }}</div></td>
+              {% for subject in subjects %}
+                {% set mark = existing.get((student.id, subject.id)) %}
+                <td class="text-center">
+                  <input class="form-control form-control-sm mark-input text-center" type="number" min="0" max="{{ exam.max_marks }}" step="0.01" name="mark_{{ student.id }}_{{ subject.id }}" value="{{ mark.marks_obtained|num if mark else '' }}" placeholder="—" aria-label="{{ student.student_code }} {{ subject.code }}">
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
+      <div class="text-muted small"><i class="bi bi-info-circle me-1"></i>Leave a cell empty to skip it. Grades and results are computed from saved marks.</div>
+      <button class="btn btn-primary" type="submit"><i class="bi bi-save me-1"></i>Save Marks &amp; Recalculate</button>
+    </div>
+  </form>
+{% endif %}
+{% endblock %}

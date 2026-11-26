@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Hello, {{ student.first_name }} 👋</h1>
+  <p class="page-subtitle">{{ student.course.name }} · Semester {{ student.semester.number }} · {{ student.student_code }}</p>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="stat-card stat-primary"><div class="stat-icon"><i class="bi bi-award-fill"></i></div><div class="stat-value">{{ stats.exams }}</div><div class="stat-label">Results Published</div></div></div>
+  <div class="col-6 col-xl-3"><div class="stat-card stat-teal"><div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div><div class="stat-value">{{ stats.average|num }}%</div><div class="stat-label">Average Percentage</div></div></div>
+  <div class="col-6 col-xl-3"><div class="stat-card stat-violet"><div class="stat-icon"><i class="bi bi-stars"></i></div><div class="stat-value">{{ stats.best|num }}%</div><div class="stat-label">Best Score</div></div></div>
+  <div class="col-6 col-xl-3"><div class="stat-card stat-amber"><div class="stat-icon"><i class="bi bi-mortarboard"></i></div><div class="stat-value">{{ stats.gpa|num }}</div><div class="stat-label">Latest GPA</div></div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-8">
+    <div class="card app-card mb-4">
+      <div class="card-header app-card-header"><div><h5 class="card-title mb-0">Performance Trend</h5><small class="text-muted">Percentage across published examinations</small></div><a class="btn btn-sm btn-outline-primary" href="{{ url_for('student.analytics') }}">Details</a></div>
+      <div class="card-body"><canvas id="studentTrendChart" data-chart-url="{{ url_for('student.api_performance') }}" data-chart-type="line" height="120"></canvas></div>
+    </div>
+
+    <div class="card app-card">
+      <div class="card-header app-card-header"><h5 class="card-title mb-0">Recent Results</h5><a class="btn btn-sm btn-link" href="{{ url_for('student.results') }}">View all</a></div>
+      <div class="table-responsive">
+        <table class="table app-table mb-0">
+          <thead><tr><th>Examination</th><th>%</th><th>Grade</th><th>GPA</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+          {% for result in results %}
+            <tr>
+              <td><strong>{{ result.examination.name }}</strong><div class="text-muted small">{{ result.examination.academic_year }}</div></td>
+              <td>{{ result.percentage|num }}%</td>
+              <td><span class="grade-badge">{{ result.grade }}</span></td>
+              <td>{{ result.gpa|num }}</td>
+              <td><span class="status-pill {{ result.status }}">{{ result.status|title }}</span></td>
+              <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('student.result_detail', id=result.id) }}"><i class="bi bi-eye"></i></a></td>
+            </tr>
+          {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No results have been published yet.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-4">
+    {% if latest %}
+      <div class="card app-card result-highlight mb-4">
+        <div class="card-body">
+          <div class="small text-uppercase text-muted">Latest Result</div>
+          <h5 class="mt-1">{{ latest.examination.name }}</h5>
+          <div class="display-6 fw-bold">{{ latest.percentage|num }}%</div>
+          <div class="d-flex gap-2 align-items-center mt-2">
+            <span class="grade-badge grade-lg">{{ latest.grade }}</span>
+            <span class="status-pill {{ latest.status }}">{{ latest.status|title }}</span>
+            <span class="text-muted small">Rank {{ latest.rank or '—' }}</span>
+          </div>
+          <a class="btn btn-light w-100 mt-4" href="{{ url_for('student.marksheet_pdf', id=latest.id) }}"><i class="bi bi-file-earmark-pdf me-1"></i>Download Marksheet</a>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="card app-card">
+      <div class="card-header app-card-header"><h5 class="card-title mb-0">Notifications</h5><a class="btn btn-sm btn-link" href="{{ url_for('student.notifications') }}">All</a></div>
+      <div class="card-body">
+        {% for notification in notifications %}
+          <div class="notification-mini">
+            <div class="notification-mini-icon"><i class="bi bi-megaphone"></i></div>
+            <div><strong>{{ notification.title }}</strong><div class="small text-muted">{{ notification.message|truncate(70) }}</div></div>
+          </div>
+        {% else %}<p class="text-muted mb-0">No notifications yet.</p>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

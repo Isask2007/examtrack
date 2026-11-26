@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Course' if course else 'Add Course' }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <a class="btn btn-link ps-0" href="{{ url_for('admin.courses') }}"><i class="bi bi-arrow-left me-1"></i>Back to courses</a>
+  <h1 class="page-title">{{ 'Edit Course' if course else 'Add Course' }}</h1>
+</div>
+<div class="card app-card">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="card-body row g-3">
+      <div class="col-md-3">
+        <label class="form-label" for="code">Course Code *</label>
+        <input class="form-control" id="code" name="code" value="{{ form.get('code', course.code if course else '') }}" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="name">Course Name *</label>
+        <input class="form-control" id="name" name="name" value="{{ form.get('name', course.name if course else '') }}" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="duration_years">Duration (years) *</label>
+        <input class="form-control" type="number" min="1" max="6" id="duration_years" name="duration_years" value="{{ form.get('duration_years', course.duration_years if course else 3) }}" required>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="description">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="3">{{ form.get('description', course.description if course and course.description else '') }}</textarea>
+      </div>
+      <div class="col-12">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {{ 'checked' if (course and course.is_active) or (not course and not form) }}>
+          <label class="form-check-label" for="is_active">Active</label>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer bg-white border-0 d-flex gap-2">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle me-1"></i>Save Course</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('admin.courses') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

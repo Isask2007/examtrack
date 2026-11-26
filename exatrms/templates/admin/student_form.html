@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Student' if student else 'Add Student' }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <a class="btn btn-link ps-0" href="{{ url_for('admin.students') }}"><i class="bi bi-arrow-left me-1"></i>Back to students</a>
+  <h1 class="page-title">{{ 'Edit Student' if student else 'Add New Student' }}</h1>
+  <p class="page-subtitle">Student profile and login credentials are saved together.</p>
+</div>
+
+<form method="post" class="card app-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="card-body">
+    <h5 class="section-heading"><i class="bi bi-person-lines-fill"></i> Academic Details</h5>
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <label class="form-label" for="student_code">Student Code *</label>
+        <input class="form-control" id="student_code" name="student_code" value="{{ form.get('student_code', student.student_code if student else '') }}" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="first_name">First Name *</label>
+        <input class="form-control" id="first_name" name="first_name" value="{{ form.get('first_name', student.first_name if student else '') }}" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="last_name">Last Name *</label>
+        <input class="form-control" id="last_name" name="last_name" value="{{ form.get('last_name', student.last_name if student else '') }}" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="gender">Gender</label>
+        <select class="form-select" id="gender" name="gender">
+          {% set gender = form.get('gender', student.gender if student else '') %}
+          <option value="">Select</option>
+          <option value="Male" {{ 'selected' if gender == 'Male' }}>Male</option>
+          <option value="Female" {{ 'selected' if gender == 'Female' }}>Female</option>
+          <option value="Other" {{ 'selected' if gender == 'Other' }}>Other</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="course_id">Course *</label>
+        <select class="form-select" id="course_id" name="course_id" required>
+          <option value="">Select course</option>
+          {% set selected_course = form.get('course_id', student.course_id if student else '')|string %}
+          {% for course in courses %}<option value="{{ course.id }}" {{ 'selected' if selected_course == course.id|string }}>{{ course.code }} — {{ course.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="semester_id">Semester *</label>
+        <select class="form-select" id="semester_id" name="semester_id" required>
+          <option value="">Select semester</option>
+          {% set selected_sem = form.get('semester_id', student.semester_id if student else '')|string %}
+          {% for semester in semesters %}<option value="{{ semester.id }}" {{ 'selected' if selected_sem == semester.id|string }}>Semester {{ semester.number }} ({{ semester.academic_year }})</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="admission_date">Admission Date *</label>
+        <input class="form-control" type="date" id="admission_date" name="admission_date" value="{{ form.get('admission_date', (student.admission_date|datefmt('%Y-%m-%d') if student.admission_date else '')) }}" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="date_of_birth">Date of Birth</label>
+        <input class="form-control" type="date" id="date_of_birth" name="date_of_birth" value="{{ form.get('date_of_birth', (student.date_of_birth|datefmt('%Y-%m-%d') if student.date_of_birth else '')) }}">
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="address">Address</label>
+        <textarea class="form-control" id="address" name="address" rows="2">{{ form.get('address', student.address if student else '') or '' }}</textarea>
+      </div>
+    </div>
+
+    <h5 class="section-heading"><i class="bi bi-at"></i> Contact &amp; Login</h5>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label" for="email">Email *</label>
+        <input class="form-control" type="email" id="email" name="email" value="{{ form.get('email', student.email if student else '') }}" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="phone">Phone</label>
+        <input class="form-control" id="phone" name="phone" value="{{ form.get('phone', student.phone if student else '') or '' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="username">Username *</label>
+        <input class="form-control" id="username" name="username" value="{{ form.get('username', student.user.username if student and student.user else '') }}" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="password">{{ 'New Password' if student else 'Password *' }}</label>
+        <input class="form-control" type="password" id="password" name="password" {{ 'required' if not student }}>
+      </div>
+      <div class="col-12">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {{ 'checked' if (student and student.is_active) or (not student and not form) }}>
+          <label class="form-check-label" for="is_active">Active account</label>
+        </div>
+      </div>
+    </div>
+    {% if student %}<div class="form-text mt-2">Leave password blank to keep the current password.</div>{% endif %}
+  </div>
+  <div class="card-footer bg-white border-0 d-flex gap-2">
+    <button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle me-1"></i>{{ 'Save Changes' if student else 'Create Student' }}</button>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.students') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Examinations{% endblock %}
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-end gap-3">
+  <div><h1 class="page-title">Examinations</h1><p class="page-subtitle">Create exams, enter marks and publish results.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('admin.exam_new') }}"><i class="bi bi-plus-lg me-1"></i>New Examination</a>
+</div>
+<div class="card app-card">
+  <div class="card-body border-bottom">
+    <form class="row g-2 align-items-center" method="get">
+      <div class="col-md-3">
+        <select class="form-select" name="course_id" data-auto-submit>
+          <option value="">All courses</option>
+          {% for course in courses %}<option value="{{ course.id }}" {{ 'selected' if course.id == course_id }}>{{ course.code }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" name="semester_id" data-auto-submit>
+          <option value="">All semesters</option>
+          {% for semester in semesters %}<option value="{{ semester.id }}" {{ 'selected' if semester.id == semester_id }}>Semester {{ semester.number }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" name="published" data-auto-submit>
+          <option value="">All status</option>
+          <option value="yes" {{ 'selected' if published == 'yes' }}>Published</option>
+          <option value="no" {{ 'selected' if published == 'no' }}>Unpublished</option>
+        </select>
+      </div>
+      <div class="col-md-3"><button class="btn btn-primary w-100" type="submit">Filter</button></div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table app-table mb-0 align-middle">
+      <thead><tr><th>Examination</th><th>Course</th><th>Year</th><th>Max Marks</th><th>Results</th><th>Published</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+      {% for exam in exams_page.items %}
+        <tr>
+          <td><strong>{{ exam.name }}</strong><div class="text-muted small">{{ exam.exam_type }} · {{ exam.start_date|datefmt }}</div></td>
+          <td>{{ exam.course.code }} / Sem {{ exam.semester.number }}</td>
+          <td>{{ exam.academic_year }}</td>
+          <td>{{ exam.max_marks|num }}</td>
+          <td>{{ exam.results.count() }}</td>
+          <td><span class="status-pill {{ 'pass' if exam.is_published else 'fail' }}">{{ 'Published' if exam.is_published else 'Draft' }}</span></td>
+          <td class="text-end">
+            <div class="btn-group btn-group-sm">
+              <a class="btn btn-outline-primary" href="{{ url_for('admin.marks', exam_id=exam.id) }}" title="Enter marks"><i class="bi bi-pencil-square"></i></a>
+              <a class="btn btn-outline-secondary" href="{{ url_for('admin.exam_edit', id=exam.id) }}" title="Edit"><i class="bi bi-pencil"></i></a>
+              <form method="post" action="{{ url_for('admin.exam_unpublish' if exam.is_published else 'admin.exam_publish', id=exam.id) }}" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-outline-{{ 'warning' if exam.is_published else 'success' }}" title="{{ 'Unpublish' if exam.is_published else 'Publish' }}"><i class="bi bi-{{ 'eye-slash' if exam.is_published else 'eye' }}"></i></button>
+              </form>
+              <button class="btn btn-outline-danger" data-confirm="Delete {{ exam.name }}?" data-form="del-exam-{{ exam.id }}"><i class="bi bi-trash"></i></button>
+            </div>
+            <form id="del-exam-{{ exam.id }}" method="post" action="{{ url_for('admin.exam_delete', id=exam.id) }}" class="d-none"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"></form>
+          </td>
+        </tr>
+      {% else %}<tr><td colspan="7" class="text-center text-muted py-5">No examinations found.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-body">{% set pagination = exams_page %}{% include '_pagination.html' %}</div>
+</div>
+{% endblock %}

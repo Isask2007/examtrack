@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-end gap-3">
+  <div><h1 class="page-title">Performance Analytics</h1><p class="page-subtitle">Charts generated directly from MySQL records.</p></div>
+  <form class="d-flex gap-2" method="get">
+    <select class="form-select" name="exam_id" onchange="this.form.submit()">
+      <option value="">Latest examination</option>
+      {% for exam in exams %}<option value="{{ exam.id }}" {{ 'selected' if selected_exam and exam.id == selected_exam.id }}>{{ exam.name }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-primary" type="submit">Apply</button>
+  </form>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-8">
+    <div class="card app-card h-100">
+      <div class="card-header app-card-header"><div><h5 class="card-title mb-0">Overall Examination Performance</h5><small class="text-muted">Pass %, fail % and average % per exam</small></div></div>
+      <div class="card-body"><canvas id="adminExamChart" data-chart-url="{{ url_for('admin.api_exam_performance') }}" data-chart-type="bar" height="120"></canvas></div>
+    </div>
+  </div>
+  <div class="col-xl-4">
+    <div class="card app-card h-100">
+      <div class="card-header app-card-header"><div><h5 class="card-title mb-0">Enrolment by Course</h5><small class="text-muted">Active students</small></div></div>
+      <div class="card-body"><canvas id="adminCourseChart" data-chart-url="{{ url_for('admin.api_course_distribution') }}" data-chart-type="doughnut" height="230"></canvas></div>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="card app-card">
+      <div class="card-header app-card-header"><div><h5 class="card-title mb-0">Subject Performance</h5><small class="text-muted">{{ selected_exam.name if selected_exam else 'No examination available' }}</small></div></div>
+      <div class="card-body">
+        {% if selected_exam %}
+          <canvas id="adminSubjectChart" data-chart-url="{{ url_for('admin.api_subject_performance', exam_id=selected_exam.id) }}" data-chart-type="bar" height="100"></canvas>
+        {% else %}
+          <p class="text-muted mb-0">Create an examination to see subject analytics.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

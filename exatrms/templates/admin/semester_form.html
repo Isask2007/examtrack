@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Semester' if semester else 'Add Semester' }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <a class="btn btn-link ps-0" href="{{ url_for('admin.semesters') }}"><i class="bi bi-arrow-left me-1"></i>Back to semesters</a>
+  <h1 class="page-title">{{ 'Edit Semester' if semester else 'Add Semester' }}</h1>
+</div>
+<div class="card app-card">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="card-body row g-3">
+      <div class="col-md-4">
+        <label class="form-label" for="number">Semester Number *</label>
+        <input class="form-control" type="number" min="1" max="12" id="number" name="number" value="{{ form.get('number', semester.number if semester else '') }}" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="academic_year">Academic Year *</label>
+        <input class="form-control" id="academic_year" name="academic_year" placeholder="2026-27" value="{{ form.get('academic_year', semester.academic_year if semester else '') }}" required>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <div class="form-check form-switch mb-2">
+          <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {{ 'checked' if (semester and semester.is_active) or (not semester and not form) }}>
+          <label class="form-check-label" for="is_active">Active</label>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer bg-white border-0 d-flex gap-2">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle me-1"></i>Save Semester</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('admin.semesters') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

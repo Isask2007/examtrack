@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}My Results{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">My Results</h1>
+  <p class="page-subtitle">Published examination results with grades, GPA and digital marksheets.</p>
+</div>
+<div class="card app-card">
+  <div class="card-body border-bottom">
+    <form class="row g-2 align-items-center" method="get">
+      <div class="col-md-8">
+        <select class="form-select" name="exam_id">
+          <option value="">All published examinations</option>
+          {% for exam in exams %}<option value="{{ exam.id }}" {{ 'selected' if exam.id == exam_id }}>{{ exam.name }} · {{ exam.academic_year }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4"><button class="btn btn-primary w-100" type="submit">Filter</button></div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table app-table mb-0 align-middle">
+      <thead><tr><th>Examination</th><th>Marks</th><th>%</th><th>Grade</th><th>GPA</th><th>Rank</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+      {% for result in results_page.items %}
+        <tr>
+          <td><strong>{{ result.examination.name }}</strong><div class="text-muted small">{{ result.examination.academic_year }} · {{ result.published_at|datefmt }}</div></td>
+          <td>{{ result.obtained_marks|num }} / {{ result.total_marks|num }}</td>
+          <td>{{ result.percentage|num }}%</td>
+          <td><span class="grade-badge">{{ result.grade }}</span></td>
+          <td>{{ result.gpa|num }}</td>
+          <td>{{ result.rank or '—' }}</td>
+          <td><span class="status-pill {{ result.status }}">{{ result.status|title }}</span></td>
+          <td class="text-end">
+            <div class="btn-group btn-group-sm">
+              <a class="btn btn-outline-primary" href="{{ url_for('student.result_detail', id=result.id) }}" title="View"><i class="bi bi-eye"></i></a>
+              <a class="btn btn-outline-success" href="{{ url_for('student.marksheet_pdf', id=result.id) }}" title="Download PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+            </div>
+          </td>
+        </tr>
+      {% else %}<tr><td colspan="8" class="text-center text-muted py-5">No published results available yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-body">{% set pagination = results_page %}{% include '_pagination.html' %}</div>
+</div>
+{% endblock %}
